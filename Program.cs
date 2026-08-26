@@ -1,7 +1,5 @@
-﻿using System.Text.Json.Nodes;
+using System.Text.Json.Nodes;
 using System.Text.Json;
-using System.Threading.Tasks;
-using System.Text.Json.Serialization.Metadata;
 
 public class ApiManager {
     private static readonly HttpClient _client = new();
@@ -14,8 +12,7 @@ public class ApiManager {
         PriceHistory = [];
     }
 
-    public async Task<decimal> GetStockValue(string asset)
-    {
+    public async Task<decimal> GetStockValue(string asset) {
         string url = $"https://brapi.dev/api/v2/stocks/quote?symbols={asset}&token={_token}";
 
         var response = await _client.GetAsync(url);
@@ -35,9 +32,8 @@ public class ApiManager {
         return currPrice;
     }
 }
-
-class Program
-{
+/*
+class Program {
     static async Task Main(string[] args){
         var config = JsonNode.Parse(File.ReadAllText("config.json"));
         string token = config?["ApiToken"]?.ToString() ?? "";
@@ -47,4 +43,4 @@ class Program
         decimal price = await api.GetStockValue("PETR4");
         Console.WriteLine($"Preço do PETR4: {price}");
     }
-}
+}*/

@@ -1,3 +1,10 @@
 {
-  "ApiToken": "ThisMayOrMayNotBeAFakeToken"
+  "ApiToken": "ThisMayOrMayNotBeAFakeToken",
+
+  "SmtpHost": "smtp.gmail.com",
+  "SmtpPort": 587,
+  "SmtpUser": "teste@gmail.com",
+  "SenderEmail": "teste@gmail.com",
+  "RecipientEmail": "testado@gmail.com",
+  "SmtpPass": "ThisMayOrMayNotBeAFakePassword"
 }
