@@ -107,7 +107,22 @@ public class StockController {
 }
 
 class Program {
-    static async Task Main(string[] args){
+    static async Task Main(string[] args) {
+        if (args.Length < 3) {
+            Console.WriteLine("Uso Incorreto. Tente: stock-quote-alert.exe <ATIVO> <PRECO_VENDA> <PRECO_COMPRA>");
+            return;
+        }
+
+        string asset = args[0].ToUpper();
+        decimal sellPrice, buyPrice;
+        bool validSell = decimal.TryParse(args[1], NumberStyles.Number, CultureInfo.InvariantCulture, out sellPrice);
+        bool validBuy = decimal.TryParse(args[2], NumberStyles.Number, CultureInfo.InvariantCulture, out buyPrice);
+
+        if (!validSell || !validBuy) {
+            Console.WriteLine("Erro no formato dos valores de compra e venda. Garanta que são números decimais com duas casas, separando casas decimais por ponto.");
+            return;
+        }
+
         var config = JsonNode.Parse(File.ReadAllText("config.json"));
 
         int port = (int)config?["SmtpPort"]!;
@@ -120,5 +135,21 @@ class Program {
 
         var api = new ApiManager(token);
         var emailManager = new EmailManager(host, port, user, pass, sender, recipient);
+        var controller = new StockController(sellPrice, buyPrice);
+
+        Console.WriteLine($"Iniciando monitoramento de {asset} (Venda: >= {sellPrice:F2} | Compra: <= {buyPrice:F2})\n");
+        while (true) {
+            try {
+                decimal price = await api.GetStockValue(asset);
+                DateTime now = DateTime.Now;
+
+                Console.WriteLine($"[{now:HH:mm:ss}] {asset}: R$ {price:F2}");
+                await controller.ProcessPrice(asset, price, emailManager);
+            }
+            catch (Exception ex) {
+                Console.WriteLine($"[Erro] {ex.Message}");
+            }
+            await Task.Delay(TimeSpan.FromMinutes(1));
+        }
     }
 }
