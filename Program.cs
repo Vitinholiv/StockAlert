@@ -73,6 +73,21 @@ public class StockController {
     private DateTime? _lastBuyAlert;
 
     public int Status { get; private set; } = 0;
+    private bool _sleeping = false;
+    public bool Sleep 
+    { 
+        get => _sleeping; 
+        set {
+            if (_sleeping != value) {
+                _sleeping = value;
+                if (_sleeping) {
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Mercado fechado. Entrando em modo de espera.");
+                } else {
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Mercado aberto. Retomando monitoramento.");
+                }
+            }
+        }
+    }
 
     public StockController(decimal sellPrice, decimal buyPrice, int cooldownMinutes = 10) {
         _sellPrice = sellPrice;
@@ -137,12 +152,20 @@ class Program {
         var emailManager = new EmailManager(host, port, user, pass, sender, recipient);
         var controller = new StockController(sellPrice, buyPrice);
 
-        Console.WriteLine($"Iniciando monitoramento de {asset} (Venda: >= {sellPrice:F2} | Compra: <= {buyPrice:F2})\n");
         while (true) {
             try {
-                decimal price = await api.GetStockValue(asset);
                 DateTime now = DateTime.Now;
 
+                bool isWeekday = now.DayOfWeek != DayOfWeek.Saturday && now.DayOfWeek != DayOfWeek.Sunday;
+                bool isMarketOpen = isWeekday && now.Hour >= 10 && now.Hour < 17;
+
+                controller.Sleep = !isMarketOpen;
+                if (controller.Sleep) {
+                    await Task.Delay(TimeSpan.FromMinutes(5));
+                    continue;
+                }
+
+                decimal price = await api.GetStockValue(asset);
                 Console.WriteLine($"[{now:HH:mm:ss}] {asset}: R$ {price:F2}");
                 await controller.ProcessPrice(asset, price, emailManager);
             }
