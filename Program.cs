@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using System.Globalization;
 using System.Net.Mail;
 using System.Text.Json;
 using System.Net;
@@ -61,6 +62,47 @@ public class EmailManager {
 
         using var message = new MailMessage(_sender, _recipient, subject, body);
         await smtpClient.SendMailAsync(message);
+    }
+}
+
+public class StockController {
+    private readonly decimal _sellPrice;
+    private readonly decimal _buyPrice;
+    private readonly TimeSpan _cooldown;
+    private DateTime? _lastSellAlert;
+    private DateTime? _lastBuyAlert;
+
+    public int Status { get; private set; } = 0;
+
+    public StockController(decimal sellPrice, decimal buyPrice, int cooldownMinutes = 10) {
+        _sellPrice = sellPrice;
+        _buyPrice = buyPrice;
+        _cooldown = TimeSpan.FromMinutes(cooldownMinutes);
+    }
+
+    public async Task ProcessPrice(string asset, decimal price, EmailManager emailManager) {
+        Status = 0;
+        if (price > _sellPrice) Status = 1;
+        else if (price < _buyPrice) Status = -1;
+
+        DateTime now = DateTime.Now;
+
+        if (Status == 1 && (_lastSellAlert == null || now - _lastSellAlert > _cooldown)) {
+            await emailManager.SendEmail(
+                $"[ALERTA DE VENDA] {asset} a R$ {price:F2}",
+                $"O ativo {asset} atingiu R$ {price:F2}, superando o preço de venda de R$ {_sellPrice:F2}."
+            );
+            _lastSellAlert = now;
+            Console.WriteLine($"-> E-mail de venda enviado. Cooldown de venda ativo até {now + _cooldown:HH:mm:ss}.");
+        }
+        else if (Status == -1 && (_lastBuyAlert == null || now - _lastBuyAlert > _cooldown)) {
+            await emailManager.SendEmail(
+                $"[ALERTA DE COMPRA] {asset} a R$ {price:F2}",
+                $"O ativo {asset} atingiu R$ {price:F2}, caindo abaixo do preço de compra de R$ {_buyPrice:F2}."
+            );
+            _lastBuyAlert = now;
+            Console.WriteLine($"-> E-mail de compra enviado. Cooldown de compra ativo até {now + _cooldown:HH:mm:ss}.");
+        }
     }
 }
 
