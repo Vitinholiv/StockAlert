@@ -144,7 +144,7 @@ public class StockController {
                             <td style=""padding: 10px 0; font-weight: bold; font-size: 16px; text-align: right; color: {colorHex};"">R$ {currentPrice:F2}</td>
                         </tr>
                         <tr style=""border-bottom: 1px solid #f1f5f9;"">
-                            <td style=""padding: 10px 0; color: #64748b; font-size: 14px;"">Preço Limite ({type}):</td>
+                            <td style=""padding: 10px 0; color: #64748b; font-size: 14px;"">Preço Limite:</td>
                             <td style=""padding: 10px 0; font-weight: bold; font-size: 14px; text-align: right; color: #1e293b;"">R$ {targetPrice:F2}</td>
                         </tr>
                         <tr>
@@ -153,7 +153,7 @@ public class StockController {
                         </tr>
                     </table>
                     <div style=""background-color: #f8fafc; border-left: 4px solid {colorHex}; padding: 12px 16px; border-radius: 4px; font-size: 13px; color: #475569;"">
-                        💡 <strong>Sugestão:</strong> Considere executar uma ordem de <strong>{type}</strong> para o ativo {asset} na sua corretora.
+                        Considere executar uma ordem de <strong>{type}</strong> para o ativo {asset} na sua corretora.
                     </div>
                 </div>
                 <div style=""background-color: #f8fafc; padding: 14px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9;"">
